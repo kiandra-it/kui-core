@@ -1,7 +1,104 @@
 (function () {
   'use strict';
 
-  angular.module('ngKUICore', []);
+  angular.module('ngKUICore', ['ui.bootstrap']);
+})();
+(function () {
+  'use strict';
+
+  angular.module('ngKUICore')
+    .directive('kuiConfirm', ['$modal', '$interpolate', 'KConfirm', function ($modal, $interpolate, KConfirm) {
+        return {
+          restrict: 'A',
+          link: function ($scope, $element, $attr) {
+            var confirm = new KConfirm($scope, {
+              confirmButton: $attr.confirmButton,
+              cancelButton: $attr.cancelButton,
+              confirmTitle: $attr.confirmTitle,
+              confirmPrompt: $attr.confirmPrompt
+            });
+
+            function onBeforeConfirm($event) {
+              confirm.show()
+                .then(function () {
+                  $scope.$eval($attr.confirmAction);
+                })
+                .
+              catch (function () {
+                if ($attr.rejectAction) {
+                  $scope.$eval($attr.rejectAction);
+                }
+              });
+              $event.stopPropagation();
+            }
+
+            $element.on('click', onBeforeConfirm);
+          }
+        };
+      }
+    ]);
+})();
+(function () {
+  'use strict';
+
+  angular.module('ngKUICore')
+    .service('KConfirm', ['$modal', '$interpolate', function ($modal, $interpolate) {
+        function ConfirmService(scope, options) {
+          this.scope = scope;
+          this.confirmPrompt = $interpolate(options.confirmPrompt);
+          this.confirmTitle = $interpolate(options.confirmTitle);
+          if (options.confirmButton) {
+            this.confirmButton = $interpolate(options.confirmButton)(scope);
+          }
+
+          if (options.cancelButton) {
+            this.cancelButton = $interpolate(options.cancelButton)(scope);
+          }
+        }
+
+        ConfirmService.prototype = {
+          show: function show() {
+            var modal;
+            var modalScope = this.scope.$new();
+            modalScope.confirmButton = this.confirmButton;
+            modalScope.cancelButton = this.cancelButton;
+            modalScope.onConfirm = function () {
+              modal.close(true);
+            };
+
+            modalScope.title = this.confirmTitle(modalScope);
+            modalScope.content = this.confirmPrompt(modalScope);
+
+            modal = $modal.open({
+              templateUrl: '/kguicore/confirm.html',
+              show: true,
+              scope: modalScope
+            });
+
+            modal.result.
+            finally(function () {
+              modalScope.$destroy();
+            });
+
+            return modal.result;
+          }
+        };
+
+        return ConfirmService;
+      }
+    ]);
+})();
+(function (module) {
+  try {
+    module = angular.module('kguicore-partials');
+  } catch (e) {
+    module = angular.module('kguicore-partials', []);
+  }
+  module.run(['$templateCache', function ($templateCache) {
+      $templateCache.put('/kguicore/confirm.html',
+        '<div class="modal" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content"><div class="modal-header" ng-show="title"><button type="button" class="close" ng-click="$dismiss()">&times;</button><h4 class="modal-title" ng-bind="title"></h4></div><div class="modal-body" ng-bind="content"></div><div class="modal-footer"><button type="button" class="btn btn-default" ng-click="$dismiss()">{{cancelButton || \'Cancel\'}}</button> <button type="button" class="btn btn-primary" ng-click="onConfirm()">{{confirmButton || \'Ok\'}}</button></div></div></div></div>');
+    }
+  ]);
 })();
 (function () {
   'use strict';
@@ -18,10 +115,10 @@
   }
 
   angular.module('ngKUICore')
-    .filter('unit', ['number', function (number) {
+    .filter('unit', ['numberFilter', function (numberFilter) {
         return function (input, unit, decimals, mutate) {
           if (isNaN(input)) {
-            return 'NaN';
+            return NaN;
           }
 
           var first = unit.substring(0, 1).toLowerCase();
@@ -35,13 +132,13 @@
           var upperCase = unit[0] === unit[0].toUpperCase();
           var value = input / Math.pow(divider, power);
 
-          while (mutate && value > divider) {
+          while (mutate && value >= divider) {
             value = input / Math.pow(divider, ++power);
             unit = powers[power - 1] + unit.substring(1);
           }
 
           if (decimals) {
-            value = number(value, decimals);
+            value = numberFilter(value, decimals);
           }
 
           if (upperCase) {

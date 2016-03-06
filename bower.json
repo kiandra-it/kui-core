@@ -7,7 +7,9 @@
   "description": "k ui core component",
   "main": "ng-kui-core.min.js",
   "keywords": [
-    "grid", "angular", "quick"
+    "grid",
+    "angular",
+    "quick"
   ],
   "license": "MIT",
   "private": true,
@@ -23,7 +25,8 @@
     "coverage"
   ],
   "dependencies": {
-    "angular": "~1.4"
+    "angular": "~1.4",
+    "angular-bootstrap": "^1.2.2"
   },
   "devDependencies": {
     "angular-mocks": "~1.4"

@@ -42,8 +42,8 @@ gulp.task('partials', function () {
       quotes: true
     }))
     .pipe($.ngHtml2js({
-      moduleName: 'template-partials',
-      prefix: '/quick-grid/',
+      moduleName: 'kguicore-partials',
+      prefix: '/kguicore/',
     }))
     .pipe($.rename(function(path){
       path.extname = '.tpl.js';
@@ -98,5 +98,5 @@ gulp.task('default', ['build']);
 
 gulp.task('build', function(cb) {
   //add 'test' back in when we have a test
-  runSequence('partials', 'prettify-js', 'jshint', 'concat', 'compress', cb);
+  runSequence('partials', 'test', 'prettify-js', 'jshint', 'concat', 'compress', cb);
 });

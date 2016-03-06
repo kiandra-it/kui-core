@@ -14,10 +14,10 @@
 
   angular.module('ngKUICore')
     .filter('unit', ['numberFilter',
-      function (number) {
+      function (numberFilter) {
         return function (input, unit, decimals, mutate) {
           if (isNaN(input)) {
-            return 'NaN';
+            return NaN;
           }
 
           var first = unit.substring(0, 1).toLowerCase();
@@ -31,13 +31,13 @@
           var upperCase = unit[0] === unit[0].toUpperCase();
           var value = input / Math.pow(divider, power);
 
-          while (mutate && value > divider) {
+          while (mutate && value >= divider) {
             value = input / Math.pow(divider, ++power);
             unit = powers[power - 1] + unit.substring(1);
           }
 
           if (decimals) {
-            value = number(value, decimals);
+            value = numberFilter(value, decimals);
           }
 
           if (upperCase) {
